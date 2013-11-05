@@ -45,3 +45,5 @@ prefix=$(charge_prefix "$battery_path")
 read charge_now < "$battery_path/$prefix"_now
 read charge_full < "$battery_path/$prefix"_full
 read status < "$battery_path/status"
+
+charge_percentage=$(( charge_now * 100 / charge_full ))
