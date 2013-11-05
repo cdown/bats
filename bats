@@ -1,6 +1,6 @@
 #!/bin/sh
 
-get_first_battery() {
+first_battery() {
     local battery
     local power_supply_path="$1"
 
@@ -14,7 +14,7 @@ get_first_battery() {
 }
 
 power_supply_path=/sys/class/power_supply
-battery=${1-$(get_first_battery "$power_supply_path")}
+battery=${1-$(first_battery "$power_supply_path")}
 battery_path=$power_supply_path/$battery
 
 if ! [ -d "$battery_path" ]; then
