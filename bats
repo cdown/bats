@@ -46,6 +46,10 @@ read charge_now < "$battery_path/$prefix"_now
 read charge_full < "$battery_path/$prefix"_full
 read status < "$battery_path/status"
 
-charge_percentage=$(( charge_now * 100 / charge_full ))
+if [ "$charge_full" -eq 0 ]; then
+    charge_percentage=0
+else
+    charge_percentage=$(( charge_now * 100 / charge_full ))
+fi
 
 printf '%d%.1s\n' "$charge_percentage" "$status"
