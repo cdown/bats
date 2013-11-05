@@ -47,3 +47,5 @@ read charge_full < "$battery_path/$prefix"_full
 read status < "$battery_path/status"
 
 charge_percentage=$(( charge_now * 100 / charge_full ))
+
+printf '%d%.1s\n' "$charge_percentage" "$status"
