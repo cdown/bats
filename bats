@@ -52,4 +52,9 @@ else
     charge_percentage=$(( charge_now * 100 / charge_full ))
 fi
 
+if [ "$charge_percentage" -ge 100 ]; then
+    charge_percentage=100
+    status=F  # Some batteries seem to show values >100 and never "F"
+fi
+
 printf '%d%.1s\n' "$charge_percentage" "$status"
