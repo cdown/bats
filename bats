@@ -42,9 +42,9 @@ fi
 
 prefix=$(charge_prefix "$battery_path")
 
-read charge_now < "$battery_path/$prefix"_now
-read charge_full < "$battery_path/$prefix"_full_design
-read status < "$battery_path/status"
+read -r charge_now < "$battery_path/$prefix"_now
+read -r charge_full < "$battery_path/$prefix"_full_design
+read -r status < "$battery_path/status"
 
 if [ "$charge_full" -eq 0 ]; then
     charge_percentage=0
