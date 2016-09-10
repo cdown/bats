@@ -6,7 +6,7 @@ first_battery() {
 
     for battery in "$power_supply_path"/*; do
         battery=${battery##*/}
-        if [[ "$battery" != AC ]]; then
+        if [[ "$battery" == AC* ]]; then
             printf '%s' "$battery"
             break
         fi
