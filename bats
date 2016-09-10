@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 first_battery() {
     local battery
@@ -6,7 +6,7 @@ first_battery() {
 
     for battery in "$power_supply_path"/*; do
         battery=${battery##*/}
-        if [ "$battery" != AC ]; then
+        if [[ "$battery" != AC ]]; then
             printf '%s' "$battery"
             break
         fi
@@ -24,7 +24,7 @@ charge_prefix() {
 
     local battery_path="$1"
 
-    if [ -f "$battery_path/charge_now" ]; then
+    if [[ -f "$battery_path/charge_now" ]]; then
         echo charge
     else
         echo energy
@@ -35,7 +35,7 @@ power_supply_path=/sys/class/power_supply
 battery=${1-$(first_battery "$power_supply_path")}
 battery_path=$power_supply_path/$battery
 
-if ! [ -d "$battery_path" ]; then
+if ! [[ -d "$battery_path" ]]; then
     printf 'Battery path does not exist: %s\n' "$battery_path" >&2
     exit 1
 fi
@@ -46,13 +46,14 @@ read -r charge_now < "$battery_path/$prefix"_now
 read -r charge_full < "$battery_path/$prefix"_full_design
 read -r status < "$battery_path/status"
 
-if [ "$charge_full" -eq 0 ]; then
+# Avoid dividing by zero if charge_full is nonsense
+if (( charge_full == 0 )); then
     charge_percentage=0
 else
     charge_percentage=$(( charge_now * 100 / charge_full ))
 fi
 
-if [ "$charge_percentage" -ge 100 ]; then
+if (( charge_percentage >= 100 )); then
     charge_percentage=100
     status=F  # Some batteries seem to show values >100 and never "F"
 fi
