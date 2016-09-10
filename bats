@@ -47,11 +47,13 @@ read -r charge_full < "$battery_path/$prefix"_full_design
 read -r status < "$battery_path/status"
 
 # Avoid dividing by zero if charge_full is nonsense
-if (( charge_full == 0 )); then
-    charge_percentage=0
-else
-    charge_percentage=$(( charge_now * 100 / charge_full ))
+if (( charge_full <= 0 )); then
+    printf 'Your battery max charge value (%s) is <= 0.\n' "$charge_full" >&2
+    printf 'Please consider filing a kernel bug for your battery.\n' >&2
+    exit 1
 fi
+
+charge_percentage=$(( charge_now * 100 / charge_full ))
 
 if (( charge_percentage >= 100 )); then
     charge_percentage=100
