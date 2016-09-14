@@ -1,50 +1,36 @@
 #!/bin/bash
 
-first_battery() {
-    local battery
-    local power_supply_path="$1"
-
-    for battery in "$power_supply_path"/*; do
-        battery=${battery##*/}
-        if [[ "$battery" == AC* ]]; then
-            printf '%s' "$battery"
-            break
-        fi
-    done
-}
-
-charge_prefix() {
-    # Return the prefix to use when addressing the charge files in sysfs.
-    #
-    # Depending on your battery module, and whether your ACPI firmware is iffy,
-    # you might get energy_* (watts), or charge_* (amps). Since we only report
-    # the percentage, we don't mind which one we get, but this does mean that
-    # we end up having to look for both to work out the files we should look
-    # at.
-
-    local battery_path="$1"
-
-    if [[ -f "$battery_path/charge_now" ]]; then
-        echo charge
-    else
-        echo energy
-    fi
-}
+shopt -s nullglob
 
 power_supply_path=/sys/class/power_supply
-battery=${1-$(first_battery "$power_supply_path")}
-battery_path=$power_supply_path/$battery
 
-if ! [[ -d "$battery_path" ]]; then
-    printf 'Battery path does not exist: %s\n' "$battery_path" >&2
-    exit 1
-fi
+sum() {
+    local existing
+    declare -a existing
 
-prefix=$(charge_prefix "$battery_path")
+    for file do
+        [[ -f $file ]] && existing+=( "$file" )
+    done
+    awk '{ sum += $1 } END { print sum }' "${existing[@]}"
+}
 
-read -r charge_now < "$battery_path/$prefix"_now
-read -r charge_full < "$battery_path/$prefix"_full_design
-read -r status < "$battery_path/status"
+get_statuses() {
+    grep -ho '^.' "${@/%//status}" | paste -sd ''
+}
+
+battery_paths=( "$@" )
+battery_paths=( "${battery_paths[@]/#/$power_supply_path/}" )
+(( ${#battery_paths[@]} == 0 )) && battery_paths=( "$power_supply_path"/BAT* )
+
+charge_full=$(sum \
+    "${battery_paths[@]/%//energy_full_design}" \
+    "${battery_paths[@]/%//charge_full_design}"
+)
+charge_now=$(sum \
+    "${battery_paths[@]/%//energy_now}" \
+    "${battery_paths[@]/%//charge_now}"
+)
+status=$(get_statuses "${battery_paths[@]}")
 
 # Avoid dividing by zero if charge_full is nonsense
 if (( charge_full <= 0 )); then
@@ -60,4 +46,4 @@ if (( charge_percentage >= 100 )); then
     status=F  # Some batteries seem to show values >100 and never "F"
 fi
 
-printf '%d%.1s\n' "$charge_percentage" "$status"
+printf '%d%s\n' "$charge_percentage" "$status"
