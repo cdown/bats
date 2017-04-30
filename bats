@@ -37,6 +37,8 @@ for batt in "${batteries[@]}"; do
 
     [[ -e "$batt_dir"/energy_now ]] && prefix=energy || prefix=charge
 
+    read -r -n 1 status < "$batt_dir"/status
+
     read -r charge_full < "$batt_dir"/"$prefix"_full
     read -r charge_now < "$batt_dir"/"$prefix"_now
 
@@ -45,13 +47,13 @@ for batt in "${batteries[@]}"; do
     if (( charge_now > charge_full )); then
         debug "Current charge $charge_now > max charge $charge_full, clamping"
         charge_now="$charge_full"
+        [[ $status == [UC] ]] && status=F
     fi
 
     total_charge_full+=$charge_full
     total_charge_now+=$charge_now
-
-    read -r -n 1 status < "$batt_dir"/status
     statuses+=$status
+
 done
 
 percent=$(( total_charge_now * 100 / total_charge_full ))
