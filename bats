@@ -15,7 +15,7 @@ ps_path=/sys/class/power_supply
 batteries=( "$@" )
 if ! (( "${#batteries[@]}" )); then
     batteries=( "$ps_path"/BAT* )
-    batteries=( "${batteries[@]#"$ps_path"}" )
+    batteries=( "${batteries[@]#"$ps_path"/}" )
 fi
 
 if ! (( "${#batteries[@]}" )); then
