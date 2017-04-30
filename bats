@@ -1,60 +1,35 @@
-#!/bin/sh
+#!/bin/bash
 
-first_battery() {
-    local battery
-    local power_supply_path="$1"
+ps_path=/sys/class/power_supply
 
-    for battery in "$power_supply_path"/*; do
-        battery=${battery##*/}
-        if [ "$battery" != AC ]; then
-            printf '%s' "$battery"
-            break
-        fi
-    done
-}
+batteries=( "$@" )
+if ! (( "${#batteries[@]}" )); then
+    batteries=( "$ps_path"/BAT* )
+    batteries=( "${batteries[@]#"$ps_path"}" )
+fi
 
-charge_prefix() {
-    # Return the prefix to use when addressing the charge files in sysfs.
-    #
-    # Depending on your battery module, and whether your ACPI firmware is iffy,
-    # you might get energy_* (watts), or charge_* (amps). Since we only report
-    # the percentage, we don't mind which one we get, but this does mean that
-    # we end up having to look for both to work out the files we should look
-    # at.
+statuses=
+total_charge_full=0
+total_charge_now=0
 
-    local battery_path="$1"
+for batt in "${batteries[@]}"; do
+    batt_dir=$ps_path/$batt
 
-    if [ -f "$battery_path/charge_now" ]; then
-        echo charge
+    if [[ -e "$batt_dir"/energy_now ]]; then
+        prefix=energy
     else
-        echo energy
+        prefix=charge
     fi
-}
 
-power_supply_path=/sys/class/power_supply
-battery=${1-$(first_battery "$power_supply_path")}
-battery_path=$power_supply_path/$battery
+    read -r -n 1 status < "$batt_dir"/status
+    statuses+=$status
 
-if ! [ -d "$battery_path" ]; then
-    printf 'Battery path does not exist: %s\n' "$battery_path" >&2
-    exit 1
-fi
+    read -r charge_full < "$batt_dir"/"$prefix"_full
+    read -r charge_now < "$batt_dir"/"$prefix"_now
+    total_charge_full+=$charge_full
+    total_charge_now+=$charge_now
+done
 
-prefix=$(charge_prefix "$battery_path")
+percent=$(( total_charge_now * 100 / total_charge_full ))
 
-read charge_now < "$battery_path/$prefix"_now
-read charge_full < "$battery_path/$prefix"_full_design
-read status < "$battery_path/status"
-
-if [ "$charge_full" -eq 0 ]; then
-    charge_percentage=0
-else
-    charge_percentage=$(( charge_now * 100 / charge_full ))
-fi
-
-if [ "$charge_percentage" -ge 100 ]; then
-    charge_percentage=100
-    status=F  # Some batteries seem to show values >100 and never "F"
-fi
-
-printf '%d%.1s\n' "$charge_percentage" "$status"
+printf '%s%s\n' "$percent" "$statuses"
