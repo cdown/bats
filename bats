@@ -1,5 +1,11 @@
 #!/bin/bash
 
+debug() {
+    set +u
+    (( DEBUG )) && printf '%s\n' "$@" >&2
+    set -u
+}
+
 set -eu
 set -o pipefail
 shopt -s nullglob
@@ -37,8 +43,7 @@ for batt in "${batteries[@]}"; do
     # Some batteries talk nonsense, which might really skew the overall
     # percentage. Limit the damage.
     if (( charge_now > charge_full )); then
-        printf 'Current charge %s > reported max charge %s, clamping\n' \
-            "$charge_now" "$charge_full" >&2
+        debug "Current charge $charge_now > max charge $charge_full, clamping"
         charge_now="$charge_full"
     fi
 
