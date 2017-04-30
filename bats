@@ -24,8 +24,8 @@ if ! (( "${#batteries[@]}" )); then
 fi
 
 statuses=
-total_charge_full=0
-total_charge_now=0
+declare -i total_charge_full=0
+declare -i total_charge_now=0
 
 for batt in "${batteries[@]}"; do
     batt_dir=$ps_path/$batt
