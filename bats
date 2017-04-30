@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -eu
+set -o pipefail
+shopt -s nullglob
+
 ps_path=/sys/class/power_supply
 
 batteries=( "$@" )
@@ -8,12 +12,22 @@ if ! (( "${#batteries[@]}" )); then
     batteries=( "${batteries[@]#"$ps_path"}" )
 fi
 
+if ! (( "${#batteries[@]}" )); then
+    printf '%s\n' 'No batteries detected' >&2
+    exit 2
+fi
+
 statuses=
 total_charge_full=0
 total_charge_now=0
 
 for batt in "${batteries[@]}"; do
     batt_dir=$ps_path/$batt
+
+    if ! [[ -d "$batt_dir" ]]; then
+        printf 'Battery directory "%s" does not exist\n' "$batt_dir"
+        exit 3
+    fi
 
     [[ -e "$batt_dir"/energy_now ]] && prefix=energy || prefix=charge
 
