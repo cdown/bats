@@ -39,7 +39,7 @@ for batt in "${batteries[@]}"; do
 
     read -r -n 1 status < "$batt_dir"/status
 
-    # Can't use capacity file since one batteries total contribution towards
+    # Can't use capacity file since one battery's total contribution towards
     # the total may be radically different than another
     read -r charge_full < "$batt_dir"/"$prefix"_full
     read -r charge_now < "$batt_dir"/"$prefix"_now

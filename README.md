@@ -1,12 +1,11 @@
-bats is an extremely simple battery status printer written in pure POSIX shell.
-It uses [sysfs][sysfs] to get the battery data, so right now it is
-Linux-specific.
+bats is an extremely simple battery status printer written in bash. It uses
+[sysfs][sysfs] to get the battery data, so right now it is Linux-specific.
 
 ## Usage
 
-    $ # Will pick the first available battery, useful if you only have one
+    $ # Will show information about all available batteries
     $ bats
-    42D
+    42DFF
     $ # Explicitly choose a battery
     $ bats BAT1
     76C
@@ -14,8 +13,9 @@ Linux-specific.
 ## Output
 
 The output is in the following format `<percentage><status>`. The percentage is
-the remaining battery charge left, as calculated when comparing the full
-(design) charge to the current charge.
+the remaining battery charge left, which is calculated by totalling all of the
+battery capacities together and getting a percentage compared to the current
+charge.
 
 ### Status symbols:
 
