@@ -28,8 +28,8 @@ if (( ${#battery_paths[@]} == 0 )); then
 fi
 
 charge_full=$(sum \
-    "${battery_paths[@]/%//energy_full_design}" \
-    "${battery_paths[@]/%//charge_full_design}"
+    "${battery_paths[@]/%//energy_full}" \
+    "${battery_paths[@]/%//charge_full}"
 )
 charge_now=$(sum \
     "${battery_paths[@]/%//energy_now}" \
