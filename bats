@@ -46,9 +46,10 @@ fi
 
 charge_percentage=$(( charge_now * 100 / charge_full ))
 
+# Some batteries show values >100 and never "F", or report >100 values :-(
 if (( charge_percentage >= 100 )); then
     charge_percentage=100
-    status=F  # Some batteries seem to show values >100 and never "F"
+    status=$(printf "%0.sF" "${battery_paths[@]}")
 fi
 
 printf '%d%s\n' "$charge_percentage" "$status"
