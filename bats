@@ -11,16 +11,21 @@ sum() {
     for file do
         [[ -f $file ]] && existing+=( "$file" )
     done
-    awk '{ sum += $1 } END { print sum }' "${existing[@]}"
+    awk '{ sum += $1 } END { print sum }' "${existing[@]}" < /dev/null
 }
 
 get_statuses() {
-    grep -ho '^.' "${@/%//status}" | paste -sd ''
+    grep -ho '^.' "${@/%//status}" </dev/null | paste -sd ''
 }
 
 battery_paths=( "$@" )
 battery_paths=( "${battery_paths[@]/#/$power_supply_path/}" )
 (( ${#battery_paths[@]} == 0 )) && battery_paths=( "$power_supply_path"/BAT* )
+
+if (( ${#battery_paths[@]} == 0 )); then
+    printf 'No batteries found in %s\n' "$power_supply_path" >&2
+    exit 2
+fi
 
 charge_full=$(sum \
     "${battery_paths[@]/%//energy_full_design}" \
