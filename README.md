@@ -24,6 +24,7 @@ The status symbols transparently represent the battery status as provided by
 
 - C: Charging
 - D: Discharging
+- N: Not charging (eg. due to battery threshold)
 - F: Full
 - U: Unknown
 
