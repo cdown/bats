@@ -18,8 +18,7 @@ get_statuses() {
     grep -ho '^.' "${@/%//status}" </dev/null | paste -sd ''
 }
 
-battery_paths=( "$@" )
-battery_paths=( "${battery_paths[@]/#/$power_supply_path/}" )
+battery_paths=( "${@/#/$power_supply_path/}" )
 (( ${#battery_paths[@]} == 0 )) && battery_paths=( "$power_supply_path"/BAT* )
 
 if (( ${#battery_paths[@]} == 0 )); then
